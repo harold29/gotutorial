@@ -26,3 +26,7 @@ func (r Rectangle) Area() float64 {
 func (c Circle) Area() float64 {
 	return math.Pi * c.Radius * c.Radius
 }
+
+type Shape interface {
+	Area() float64
+}
