@@ -1,20 +1,18 @@
 package racer
 
-import "net/http"
-import "net/http/httptest"
-import "testing"
-import "time"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+)
 
 func TestRacer(t *testing.T) {
-	// t.Fatal("not implemented")
-	slowServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(20 * time.Millisecond)
-		w.WriteHeader(http.StatusOK)
-	}))
+	slowServer := makeDelayedServer(20 * time.Millisecond)
+	fastServer := makeDelayedServer(0 * time.Millisecond)
 
-	fastServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}))
+	defer slowServer.Close()
+	defer fastServer.Close()
 
 	slowURL := slowServer.URL
 	fastURL := fastServer.URL
@@ -26,6 +24,11 @@ func TestRacer(t *testing.T) {
 		t.Errorf("got %q want %q", got, want)
 	}
 
-	slowServer.Close()
-	fastServer.Close()
+}
+
+func makeDelayedServer(delay time.Duration) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(delay)
+		w.WriteHeader(http.StatusOK)
+	}))
 }
