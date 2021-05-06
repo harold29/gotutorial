@@ -7,7 +7,7 @@ type RomanNumeral struct {
 	Symbol string
 }
 
-var allRomanNumerals = []RomanNumeral{
+var allRomanNumerals = RomanNumerals{
 	{1000, "M"},
 	{900, "CM"},
 	{500, "D"},
@@ -21,6 +21,18 @@ var allRomanNumerals = []RomanNumeral{
 	{5, "V"},
 	{4, "IV"},
 	{1, "I"},
+}
+
+type RomanNumerals []RomanNumeral
+
+func (r RomanNumerals) ValueOf(symbol string) int {
+	for _, s := range r {
+		if s.Symbol == symbol {
+			return s.Value
+		}
+	}
+
+	return 0
 }
 
 func ConvertToRoman(arabic int) string {
@@ -40,8 +52,25 @@ func ConvertToRoman(arabic int) string {
 func ConvertToArabic(roman string) int {
 	total := 0
 
-	for range roman {
-		total++
+	for i := 0; i < len(roman); i++ {
+		symbol := roman[i]
+
+		if i+1 < len(roman) && symbol == 'I' {
+			nextSymbol := roman[i+1]
+
+			potentialNumber := string([]byte{symbol, nextSymbol})
+
+			value := allRomanNumerals.ValueOf(potentialNumber)
+
+			if value != 0 {
+				total += value
+				i++
+			} else {
+				total++
+			}
+		} else {
+			total++
+		}
 	}
 
 	return total
